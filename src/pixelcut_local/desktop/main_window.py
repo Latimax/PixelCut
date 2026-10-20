@@ -7,10 +7,11 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from PIL import Image
 from PySide6.QtCore import QSize, Qt
-from PySide6.QtGui import QAction, QIcon, QKeySequence
+from PySide6.QtGui import QAction, QFont, QIcon, QKeySequence
 from PySide6.QtWidgets import (
     QFileDialog,
     QHBoxLayout,
+    QLabel,
     QMainWindow,
     QMessageBox,
     QProgressBar,
@@ -120,7 +121,9 @@ class MainWindow(QMainWindow):
         # Inference Action
         self.act_remove_bg = QAction("✂ Remove Background", self)
         self.act_remove_bg.setShortcut(QKeySequence("Ctrl+R"))
-        self.act_remove_bg.setStyleSheet("font-weight: bold;")
+        bold_font = self.act_remove_bg.font()
+        bold_font.setBold(True)
+        self.act_remove_bg.setFont(bold_font)
         self.act_remove_bg.triggered.connect(self._remove_background_current)
         tb.addAction(self.act_remove_bg)
 

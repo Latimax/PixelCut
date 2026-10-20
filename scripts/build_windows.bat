@@ -38,6 +38,9 @@ echo ========================================================
 echo  Deliverable Location:
 echo    dist\PixelCutLocal\PixelCutLocal.exe
 echo.
-echo  Static web assets, Qt platform plugins, and ONNX
-echo  dependencies have been packaged inside dist\PixelCutLocal.
+echo  Note: Run the executable from dist\PixelCutLocal\,
+echo  NEVER from the intermediate build\ folder.
 echo ========================================================
+
+:: Clean intermediate build directory to prevent confusion
+if exist "build" rd /s /q "build"

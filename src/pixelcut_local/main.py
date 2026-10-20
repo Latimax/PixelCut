@@ -10,10 +10,24 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
+import subprocess
 import sys
 from pathlib import Path
 
-# Ensure src/ is in sys.path when running main.py directly
+# 1. Auto-detect project .venv if run with system Python
+project_root = Path(__file__).resolve().parent.parent.parent
+venv_python = project_root / ".venv" / "Scripts" / "python.exe"
+
+if (
+    venv_python.exists()
+    and Path(sys.executable).resolve() != venv_python.resolve()
+    and "PIXELCUT_VENV_LAUNCHED" not in os.environ
+):
+    os.environ["PIXELCUT_VENV_LAUNCHED"] = "1"
+    sys.exit(subprocess.call([str(venv_python)] + sys.argv))
+
+# 2. Ensure src/ is in sys.path when running main.py directly
 src_dir = Path(__file__).resolve().parent.parent
 if str(src_dir) not in sys.path:
     sys.path.insert(0, str(src_dir))

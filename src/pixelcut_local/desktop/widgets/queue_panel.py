@@ -21,9 +21,10 @@ from PySide6.QtWidgets import (
 )
 
 from pixelcut_local.core.constants import SUPPORTED_INPUT_EXTENSIONS
-from pixelcut_local.core.image_io import create_thumbnail, pil_to_qpixmap
+from pixelcut_local.core.image_io import create_thumbnail
 from pixelcut_local.core.mask_refinement import MaskEditor
 from pixelcut_local.core.validation import ImageValidationError, validate_image_file
+from pixelcut_local.desktop.canvas import pil_to_qpixmap
 
 logger = logging.getLogger(__name__)
 
@@ -141,17 +142,7 @@ class QueuePanel(QWidget):
 
                 # Generate thumbnail
                 with Image.open(path) as raw_img:
-                    thumb = create_thumbnail(raw_img, (96, 96))
-                    item_data.thumbnail = QPixmap.fromImage(
-                        Image.fromarray(
-                            thumb.convert("RGBA").tobytes("raw", "RGBA"), mode="RGBA"
-                        )
-                    ) if False else None  # Will create safely via QImage
-                
-                # Safe thumbnail conversion
-                with Image.open(path) as raw_img:
                     thumb_pil = create_thumbnail(raw_img, (96, 96)).convert("RGBA")
-                    from pixelcut_local.desktop.canvas import pil_to_qpixmap
                     item_data.thumbnail = pil_to_qpixmap(thumb_pil)
 
                 self.items.append(item_data)

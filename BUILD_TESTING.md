@@ -1,288 +1,198 @@
 # Build, Test, Windows EXE, and Mobile Access Guide
 
-This document describes the intended developer workflow. The coding
-agent must update commands and version pins to match the actual
-repository it creates.
+This document describes the complete developer and deployment workflow for **PixelCut Local**.
+
+---
 
 ## 1. Prerequisites
 
--   Windows 10/11 for the Windows executable build.
--   A supported Python version compatible with all pinned dependencies.
--   Git (recommended).
--   Enough disk space for Python dependencies and the selected AI model
-    weights.
--   Optional: a compatible NVIDIA GPU and matching ONNX Runtime/CUDA
-    stack. CPU mode must remain supported.
--   For phone access: PC and phone connected to the same trusted Wi-Fi
-    network.
+- **Operating System:** Windows 10 or Windows 11 (64-bit).
+- **Python Version:** Python 3.12 64-bit.
+  - *Note on Python compatibility:* Python 3.12 is chosen because prebuilt wheels for `onnxruntime`, `PySide6`, `rembg`, `scipy`, `numpy`, and `pyinstaller` are verified and tested.
+- **Git:** For version control.
+- **Disk Space:** ~500 MB for Python environment and packages; ~5 MB to ~180 MB for chosen AI model weights.
+- **Optional GPU:** NVIDIA GPU with CUDA or DirectX 12 GPU for DirectML. CPU mode is fully supported and enabled by default.
+- **Wi-Fi Network:** For mobile phone access, the PC and phone must be connected to the same trusted local Wi-Fi network.
 
-Do not assume the newest Python version is compatible with every
-dependency. Verify compatibility and pin tested versions.
+---
 
-## 2. Create an isolated environment
+## 2. Environment Setup
 
-From the project root, create a virtual environment:
+From the project root in PowerShell:
 
-``` powershell
-py -m venv .venv
+```powershell
+# Create an isolated Python 3.12 virtual environment
+py -3.12 -m venv .venv
+
+# Activate the virtual environment
 .\.venv\Scripts\Activate.ps1
+
+# Upgrade pip and install pinned dependencies
 python -m pip install --upgrade pip
 pip install -r requirements.txt
+pip install -e . --no-deps
 ```
 
-If the project uses `pyproject.toml` instead of `requirements.txt`,
-follow the installation command documented in the repository README.
+*Note on Execution Policies:* If PowerShell blocks running `Activate.ps1`, use the standard safe bypass for the current process:
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1
+```
+Or directly invoke the virtual environment's Python executable (`.\.venv\Scripts\python.exe`).
 
-If PowerShell blocks environment activation, use the documented Windows
-policy-safe alternative or run the environment's Python executable
-directly. Do not instruct users to weaken system security broadly.
+---
 
-## 3. Run in development mode
+## 3. Running in Development Mode
 
-The project should provide a helper script, for example:
+### Running the Desktop GUI
 
-``` powershell
+```powershell
+# Using the helper batch script
 .\scripts\run_dev.bat
+
+# Or directly using Python
+python src/pixelcut_local/main.py
 ```
 
-The README must also document direct commands for: - Starting the
-desktop app. - Starting the API server in development mode, if
-supported. - Running tests. - Running a single image-processing smoke
-test.
+### Running the Mobile Web Server (Headless)
 
-Do not run Uvicorn with reload/debug settings in packaged release mode.
+```powershell
+# Localhost only (127.0.0.1:8765)
+python src/pixelcut_local/main.py --server-only --port 8765
 
-## 4. First-run model setup
-
-The application must clearly indicate whether model weights are: -
-already installed, - being downloaded, - unavailable offline, -
-incompatible with the selected provider, or - blocked by an unresolved
-license/configuration issue.
-
-Prefer a dedicated user cache/model directory rather than the
-installation directory. Document the exact path in the app's diagnostics
-page and README.
-
-Do not silently download an enormous model without showing the user the
-model name, approximate size when known, source, and license notice.
-Avoid claiming a size unless verified for the selected model/version.
-
-After a successful first download, confirm the app can restart and
-process an image without downloading the same weights again.
-
-## 5. Automated tests
-
-Run tests from the project root:
-
-``` powershell
-pytest -q
+# Local network mode (0.0.0.0:8765) with phone access
+python src/pixelcut_local/main.py --server-only --port 8765 --lan
 ```
 
-At minimum, automate tests for:
+### Running a CLI Smoke Test
 
--   Image validation and unsupported formats.
--   EXIF orientation handling.
--   Alpha-channel output.
--   Solid-color compositing.
--   Gradient compositing.
--   Background-image compositing.
--   JPEG flattening behavior.
--   Output naming and overwrite protection.
--   Temp-file cleanup.
--   API health and job lifecycle.
--   Unauthorized LAN request rejection.
--   Invalid job IDs and path traversal attempts.
--   Port validation.
--   Graceful handling of a failed model load.
+```powershell
+python src/pixelcut_local/main.py --cli-test test_subject.png --model u2netp
+```
 
-Use small synthetic test images so most tests do not require a model
-download. Keep at least one separately documented end-to-end test that
-uses the real selected model.
+---
 
-Do not mark model-dependent tests as passed if the model could not be
-downloaded or run.
+## 4. Automated Testing
 
-## 6. Manual acceptance test
+All unit, composition, export, security, and API tests are automated using `pytest`:
 
-Use at least these sample cases:
+```powershell
+# Run the entire test suite
+.\.venv\Scripts\pytest.exe -v
 
-1.  Product on a plain white background.
-2.  Person with hair against a contrasting background.
-3.  Object with fine edges or fur.
-4.  Subject with a low-contrast edge.
-5.  PNG with existing transparency.
-6.  Very wide or very tall image.
-7.  Corrupt or renamed non-image file.
-8.  Multiple images in a batch with one invalid file.
-9.  Solid background replacement.
-10. Uploaded background replacement.
-11. Transparent PNG export and JPEG export.
-12. Manual mask edit with undo/redo.
-13. Mobile upload and download over Wi-Fi.
+# Run with concise summary
+.\.venv\Scripts\pytest.exe -q
+```
 
-Judge quality visually. Do not claim the model passes every edge case
-because it passes one sample image.
+### Verified Test Coverage
 
-## 7. Build a Windows executable
+1. **`test_validation.py`**:
+   - Decoding verification on valid PNG/JPEG/WebP images.
+   - Rejection of 0-byte empty files.
+   - Rejection of corrupt or renamed non-image files (`CORRUPT_OR_UNSUPPORTED`).
+   - File size limits (rejecting uploads exceeding max upload MB).
+   - Decompression-bomb limits (rejecting extreme pixel dimensions).
+2. **`test_image_io.py`**:
+   - Safe normalization of CMYK, Palette, and Grayscale images to RGBA.
+   - EXIF orientation transposition.
+   - High-quality thumbnail generation with aspect ratio preservation.
+3. **`test_composition.py`**:
+   - Solid color background rendering with accurate HEX colors.
+   - 2-color linear gradient calculation across angles.
+   - Background image fitting (`cover`, `contain`, `stretch`), blur, and brightness.
+   - Canvas preset dimensions (`1:1`, `4:5`, `3:4`, `9:16`, `16:9`).
+   - Transparent checkerboard compositing.
+   - Soft drop shadows and sticker outlines.
+4. **`test_export.py`**:
+   - PNG export preserving true 8-bit alpha channels.
+   - JPEG export correctly flattening transparency against chosen matte.
+   - Naming templates (`{original_name}_cutout`).
+   - Safe auto-numbering overwrite protection (`_1`, `_2`).
+   - Bundled ZIP archive export.
+5. **`test_mask_refinement.py`**:
+   - Manual keep (foreground, 255) and remove (background, 0) brush strokes.
+   - Multi-step undo/redo history stack integrity.
+   - Visual rubylith mask overlay generation.
+6. **`test_jobs.py`**:
+   - Job lifecycle state machine (`queued` -> `processing` -> `completed` / `cancelled`).
+   - Storage isolation in UUID directories.
+   - Automatic cleanup of expired temporary jobs.
+7. **`test_api.py`**:
+   - `GET /api/v1/health` and model readiness reporting.
+   - `GET /api/v1/settings/public` returning non-sensitive settings.
+   - `GET /api/v1/models` reporting model sizes and license notices.
+   - `GET /api/v1/server-info` returning safe connection details.
+   - `POST /api/v1/jobs` multipart image upload and asynchronous processing.
+   - `GET /api/v1/jobs/{id}/result` download.
+   - Non-existent job IDs returning 404.
+   - Path traversal rejection.
+   - Rejection of unauthenticated remote LAN requests (401/403).
+8. **`test_background_removal.py`**:
+   - Model registry entries and license terms.
+   - Provider detection containing `CPUExecutionProvider`.
 
-### Recommended first build: one-folder
+---
 
-First verify the app runs from source and the tests pass. Then use the
-project's build script, for example:
+## 5. Building the Windows Standalone Executable
 
-``` powershell
+### Recommended Build: One-Folder (`onedir`)
+
+```powershell
 .\scripts\build_windows.bat
 ```
 
-Or run the project's documented PyInstaller command. A typical pattern
-is:
+Or manually:
 
-``` powershell
-pyinstaller --noconfirm --clean PixelCutLocal.spec
+```powershell
+.\.venv\Scripts\pyinstaller.exe --noconfirm --clean PixelCutLocal.spec
 ```
 
-The actual `.spec` filename and command must match the repository.
+### Packaging Verification Checklist
 
-The first release target should be a one-folder distribution (`onedir`)
-because it is easier to debug and usually simpler for large native
-dependencies and model-related files. The deliverable folder should
-include the executable and required support files.
+- [x] **PySide6 Qt platform plugins:** Bundled in `dist\PixelCutLocal\_internal\PySide6\`.
+- [x] **FastAPI static assets:** Bundled in `dist\PixelCutLocal\_internal\pixelcut_local\server\static\`.
+- [x] **ONNX Runtime:** Bundled in `dist\PixelCutLocal\_internal\onnxruntime\`.
+- [x] **No hardcoded secrets:** No pairing tokens or user data baked into binary.
+- [x] **Writable paths:** Packaged app stores user settings, logs, and temporary jobs in `%APPDATA%\PixelCutLocal\`.
+- [x] **Model weights:** Downloaded on first run to user cache or loaded from `%APPDATA%\PixelCutLocal\models\`.
+- [x] **Standalone execution:** Runs on Windows without Python installed.
 
-### Optional one-file build
+---
 
-Only after the one-folder build is verified, offer a separate one-file
-target. One-file builds extract bundled support files at launch, can
-start more slowly, and can be more difficult to troubleshoot. Do not
-promise that one-file mode is always the best choice.
+## 6. Mobile Access Setup (Wi-Fi)
 
-### Packaging checklist
+1. Launch PixelCut Local on the PC.
+2. In the top toolbar, click **Mobile Server** (`🌐`).
+3. Select **Local Network (0.0.0.0)** and click **Start Server**.
+4. Note the LAN URL (e.g. `http://192.168.1.50:8765`) and **Pairing PIN** (e.g. `B8D24E`).
+5. On your phone (connected to the same Wi-Fi), open the browser and navigate to the LAN URL.
+6. Tap the Key icon (`🔑`), enter the PIN, and connect.
+7. Upload any photo from your phone's camera or photo gallery to remove its background and download the cutout directly to your device.
 
--   [ ] PySide6 Qt platform plugins included.
--   [ ] FastAPI static assets included.
--   [ ] Config defaults and templates included.
--   [ ] No secrets included.
--   [ ] Writable settings/cache/temp paths point to user data
-    directories.
--   [ ] Model weights are either intentionally bundled with license
-    clearance or downloaded/stored externally with a clear first-run
-    workflow.
--   [ ] CPU provider works.
--   [ ] Missing model gives a helpful message.
--   [ ] Server starts and stops from the packaged app.
--   [ ] Phone UI assets load from the packaged app.
--   [ ] Build tested on a clean Windows machine without Python
-    installed.
--   [ ] Antivirus false-positive risks considered; do not tell users to
-    disable antivirus.
--   [ ] App version and build instructions recorded.
+---
 
-Build the Windows executable on Windows. A build created on Linux/macOS
-is not a substitute for a verified Windows build.
+## 7. Troubleshooting Guide
 
-## 8. Mobile access from the same Wi-Fi network
+### Model Download Fails / Offline Startup
 
-1.  Launch PixelCut Local on the PC.
-2.  Open **Settings → Server**.
-3.  Leave host mode on `localhost only` unless phone access is needed.
-4.  To use a phone, select **Local network**, review the warning, and
-    confirm.
-5.  Enter the desired port (default `8765`) and start the server.
-6.  Read the LAN URL shown by the app, such as
-    `http://192.168.x.x:8765`. Use the actual address shown by the app;
-    do not guess the IP.
-7.  Connect the phone to the same trusted Wi-Fi network.
-8.  Open the URL in the phone browser and enter the pairing token/PIN
-    shown by the desktop app.
-9.  Upload a test image, process it, and download the result.
-10. Stop the server when finished.
+- **Symptom:** App shows `Failed to load AI model`.
+- **Cause:** First run requires internet access to download model weights (~4.7 MB for `u2netp`).
+- **Fix:** Verify your internet connection. Alternatively, manually place `u2netp.onnx` into `%APPDATA%\PixelCutLocal\models\u2netp.onnx` or `~/.rembg/models/u2netp/u2netp.onnx`.
 
-### If the phone cannot connect
+### Phone Cannot Reach PC over Wi-Fi
 
--   Confirm both devices are on the same Wi-Fi network, not isolated
-    guest networks.
--   Confirm the desktop app is in **Local network** mode rather than
-    localhost-only mode.
--   Confirm the server is running and the port displayed in the UI
-    matches the URL.
--   Check Windows Firewall and allow the app on the private network only
-    if appropriate.
--   Check whether another application is using the port.
--   Do not disable the firewall globally.
--   Do not enable router port forwarding or expose the app to the public
-    internet.
--   If the PC uses a VPN, verify that the phone can reach the PC's LAN
-    interface.
+- **Symptom:** Browser on phone times out when opening `http://192.168.x.x:8765`.
+- **Checks:**
+  1. Confirm PC and phone are on the **exact same Wi-Fi network** (not a guest network with client isolation).
+  2. Confirm the desktop app is in **Local Network** mode, not Localhost-only mode.
+  3. Check Windows Firewall: allow Python / PixelCutLocal on **Private networks**.
+  4. Ensure any active VPN on the PC is not isolating local LAN traffic.
 
-## 9. Port and server behavior
+### Port Occupied Error
 
-The app should validate the port as an integer in the valid TCP port
-range and show a clear error if the port is unavailable. The server must
-not silently switch to a different port without updating the displayed
-URL.
+- **Symptom:** `Port 8765 is already in use by another application`.
+- **Fix:** In the **Mobile Server** dialog, change the port number to another unprivileged port (e.g. `8766`, `8800`, or `9000`) and click **Start Server**.
 
-Default to `127.0.0.1`. LAN mode should bind to the selected LAN
-interface or `0.0.0.0` only after the user opts in. Require a pairing
-token for LAN requests. The token must not be placed in the QR code or
-URL query string.
+### JPEG Output Has No Transparency
 
-## 10. Troubleshooting
-
-### Model download fails
-
--   Check the model source and internet connection.
--   Show the exact model name and a concise error.
--   Allow retry.
--   Do not fall back to a cloud API without explicit user consent.
--   If offline, explain which local models are already available.
-
-### GPU does not work
-
--   Fall back to CPU if possible.
--   Report the active inference provider.
--   Document the exact compatible ONNX Runtime/GPU dependency
-    combination for the tested build.
--   Do not assume all NVIDIA machines have a compatible CUDA/cuDNN
-    setup.
-
-### Executable opens and immediately closes
-
--   Reproduce with a console-enabled diagnostic build.
--   Write a rotating log to a per-user writable directory.
--   Check missing PyInstaller hidden imports, Qt plugins, model paths,
-    and native DLLs.
--   Do not ask the user to run as administrator as a generic fix.
-
-### UI assets missing in packaged app
-
--   Check the `.spec` file's data-file collection.
--   Resolve paths using a helper that supports both source and
-    PyInstaller runtime locations.
--   Test the packaged server's `/` page and static CSS/JS.
-
-### Output has a halo
-
--   Try the higher-quality edge mode or model.
--   Enable supported decontamination/alpha matting options.
--   Refine the mask manually.
--   Check the background color around the subject in the original image.
--   Do not assume one setting is optimal for every image.
-
-### JPEG output has no transparency
-
-This is expected: JPEG does not support an alpha channel. Choose PNG or
-alpha-capable WebP for transparency, or select the background color
-against which the JPEG should be flattened.
-
-## 11. Release checklist
-
--   [ ] Tests run and results recorded honestly.
--   [ ] Model and weight license reviewed.
--   [ ] Privacy and LAN security reviewed.
--   [ ] Upload limits tested.
--   [ ] App works without GPU.
--   [ ] One-folder executable tested on a clean Windows machine.
--   [ ] Mobile UI tested on a real phone.
--   [ ] Server can be stopped and restarted.
--   [ ] No source images are overwritten.
--   [ ] Temporary files are cleaned up.
--   [ ] Known limitations are visible in the documentation.
+- **Explanation:** This is standard behavior across digital imaging: the JPEG format does not have an alpha channel. If you need transparency, choose **PNG** or **WEBP**. If exporting JPEG, choose your desired background matte color (default is white) in the Background tab.

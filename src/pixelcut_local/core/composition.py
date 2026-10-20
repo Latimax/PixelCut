@@ -7,6 +7,7 @@ import math
 from typing import List, Optional, Tuple, Union
 from PIL import Image, ImageChops, ImageEnhance, ImageFilter, ImageOps
 import numpy as np
+from scipy import ndimage
 
 logger = logging.getLogger(__name__)
 

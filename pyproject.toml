@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pixelcut-local"
+version = "1.0.0"
+description = "Local-first AI background removal and image composition desktop application and local web server."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "PixelCut Engineering" }
+]
+dependencies = [
+    "PySide6>=6.8.0",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "python-multipart>=0.0.12",
+    "pydantic>=2.9.0",
+    "pillow>=10.4.0",
+    "numpy>=1.26.0",
+    "scipy>=1.14.0",
+    "onnxruntime>=1.19.0",
+    "rembg>=2.0.59",
+    "qrcode[pil]>=8.0",
+    "pytest>=8.3.0",
+    "httpx>=0.27.0",
+    "pyinstaller>=6.10.0",
+]
+
+[project.scripts]
+pixelcut-local = "pixelcut_local.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"pixelcut_local.server" = ["static/*", "static/**/*"]

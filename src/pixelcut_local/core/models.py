@@ -104,7 +104,12 @@ def get_model_file_path(model_id: str) -> Optional[Path]:
     if candidate.exists() and candidate.stat().st_size > 1000:
         return candidate
 
-    # Also check user home .u2net directory (default rembg cache)
+    # Check rembg cache paths (.rembg/models/<model_id>/<filename>)
+    rembg_home = Path.home() / ".rembg" / "models" / model_id / info.weight_filename
+    if rembg_home.exists() and rembg_home.stat().st_size > 1000:
+        return rembg_home
+
+    # Also check user home .u2net directory (default legacy rembg cache)
     u2net_home = Path.home() / ".u2net" / info.weight_filename
     if u2net_home.exists() and u2net_home.stat().st_size > 1000:
         return u2net_home

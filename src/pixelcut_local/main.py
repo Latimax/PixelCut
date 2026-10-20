@@ -13,6 +13,11 @@ import logging
 import sys
 from pathlib import Path
 
+# Ensure src/ is in sys.path when running main.py directly
+src_dir = Path(__file__).resolve().parent.parent
+if str(src_dir) not in sys.path:
+    sys.path.insert(0, str(src_dir))
+
 from pixelcut_local import __app_name__, __version__
 from pixelcut_local.config import Settings
 from pixelcut_local.logging_setup import setup_logging

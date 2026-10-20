@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PixelCut Local - Mobile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-icon">✂</div>
+        <div class="brand-text">
+          <h1>PixelCut</h1>
+          <span class="badge">Local LAN</span>
+        </div>
+      </div>
+      <button id="auth-btn" class="icon-btn" title="Pairing Authentication">🔑</button>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="main-content">
+      <!-- Upload Dropzone / Camera Action -->
+      <section id="upload-section" class="card upload-card">
+        <input type="file" id="file-input" accept="image/*" class="file-input-hidden">
+        <div id="dropzone" class="dropzone" onclick="document.getElementById('file-input').click()">
+          <div class="drop-icon-pulse">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+          </div>
+          <h3>Take Photo or Upload</h3>
+          <p class="subtext">JPG, PNG, WebP up to 25 MB</p>
+          <div class="upload-actions">
+            <span class="btn-primary">Choose from Gallery</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Processing Progress Card -->
+      <section id="progress-section" class="card progress-card hidden">
+        <div class="spinner"></div>
+        <h4 id="progress-title">Removing Background...</h4>
+        <div class="progress-bar-container">
+          <div id="progress-bar" class="progress-bar" style="width: 15%;"></div>
+        </div>
+        <p id="progress-status-text" class="subtext">Uploading to local AI engine...</p>
+      </section>
+
+      <!-- Preview & Composition Editor -->
+      <section id="editor-section" class="card editor-card hidden">
+        <!-- Interactive Preview Box -->
+        <div class="preview-wrapper">
+          <div class="preview-tabs">
+            <button id="tab-result" class="tab-btn active">Cutout Preview</button>
+            <button id="tab-original" class="tab-btn">Original</button>
+          </div>
+          <div class="canvas-container checkerboard">
+            <img id="preview-image" alt="Cutout Preview" class="preview-img">
+            <img id="original-image" alt="Original Image" class="preview-img hidden">
+          </div>
+        </div>
+
+        <!-- Controls Accordion / Tabs -->
+        <div class="control-tabs">
+          <button class="ctrl-tab active" data-tab="bg-tab">Background</button>
+          <button class="ctrl-tab" data-tab="canvas-tab">Aspect Ratio</button>
+          <button class="ctrl-tab" data-tab="fx-tab">Effects</button>
+        </div>
+
+        <!-- Background Controls -->
+        <div id="bg-tab" class="tab-content active">
+          <div class="btn-group-chips">
+            <button class="chip active" data-bg="transparent">Transparent</button>
+            <button class="chip" data-bg="solid">Solid Color</button>
+            <button class="chip" data-bg="gradient">Gradient</button>
+            <button class="chip" data-bg="image">Image</button>
+          </div>
+
+          <!-- Solid Color Picker -->
+          <div id="solid-controls" class="control-row hidden">
+            <label>Color</label>
+            <div class="color-picker-wrap">
+              <input type="color" id="solid-color-picker" value="#ffffff">
+              <span id="solid-color-hex">#FFFFFF</span>
+            </div>
+          </div>
+
+          <!-- Gradient Presets -->
+          <div id="gradient-controls" class="control-row hidden">
+            <label>Gradient Theme</label>
+            <div class="gradient-palette">
+              <div class="grad-swatch active" data-g1="#6366f1" data-g2="#a855f7" style="background: linear-gradient(135deg, #6366f1, #a855f7);"></div>
+              <div class="grad-swatch" data-g1="#06b6d4" data-g2="#3b82f6" style="background: linear-gradient(135deg, #06b6d4, #3b82f6);"></div>
+              <div class="grad-swatch" data-g1="#f43f5e" data-g2="#fb923c" style="background: linear-gradient(135deg, #f43f5e, #fb923c);"></div>
+              <div class="grad-swatch" data-g1="#10b981" data-g2="#059669" style="background: linear-gradient(135deg, #10b981, #059669);"></div>
+              <div class="grad-swatch" data-g1="#18181b" data-g2="#3f3f46" style="background: linear-gradient(135deg, #18181b, #3f3f46);"></div>
+            </div>
+          </div>
+
+          <!-- Image Background Upload -->
+          <div id="bg-img-controls" class="control-row hidden">
+            <label>Background Image</label>
+            <input type="file" id="bg-file-input" accept="image/*" class="file-input-inline">
+          </div>
+        </div>
+
+        <!-- Canvas Controls -->
+        <div id="canvas-tab" class="tab-content hidden">
+          <div class="control-row">
+            <label>Canvas Ratio</label>
+            <select id="canvas-preset-select" class="select-field">
+              <option value="original">Original Aspect Ratio</option>
+              <option value="1:1 (Square)">1:1 (Square - Instagram)</option>
+              <option value="4:5 (Portrait)">4:5 (Portrait Post)</option>
+              <option value="9:16 (Story/Reel)">9:16 (Story / Reel / TikTok)</option>
+              <option value="16:9 (Landscape)">16:9 (Landscape / YouTube)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Effects Controls -->
+        <div id="fx-tab" class="tab-content hidden">
+          <div class="control-row toggle-row">
+            <label>Drop Shadow</label>
+            <input type="checkbox" id="shadow-toggle" class="toggle-checkbox">
+          </div>
+          <div class="control-row toggle-row">
+            <label>Sticker Outline</label>
+            <input type="checkbox" id="outline-toggle" class="toggle-checkbox">
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons-wrap">
+          <button id="apply-btn" class="btn-primary full-width">Update Composition</button>
+          <div class="download-row">
+            <select id="export-format-select" class="select-field format-select">
+              <option value="PNG">PNG (Alpha)</option>
+              <option value="JPEG">JPEG (Matte)</option>
+              <option value="WEBP">WEBP</option>
+            </select>
+            <button id="download-btn" class="btn-success">Download</button>
+          </div>
+          <button id="new-photo-btn" class="btn-ghost">Upload Another Image</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Authentication / Pairing PIN Modal -->
+    <div id="auth-modal" class="modal-overlay hidden">
+      <div class="modal-box">
+        <h3>LAN Pairing Code</h3>
+        <p class="subtext">Enter the pairing PIN displayed on your PC's PixelCut desktop screen:</p>
+        <input type="password" id="token-input" placeholder="Enter pairing PIN or token" class="input-field">
+        <div class="modal-actions">
+          <button id="save-token-btn" class="btn-primary">Connect</button>
+          <button id="cancel-token-btn" class="btn-ghost">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden"></div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,5 +1,57 @@
-.venv/
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# PyInstaller / Build artifacts
+# Keep PixelCutLocal.spec tracked, ignore build outputs
+build/
+dist/
+
+# Logs and databases
 *.log
-*.spec
+*.sqlite3
+
+# App runtime data / user cache
+data/
+cache/
+temp/
+models/
+exports/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store

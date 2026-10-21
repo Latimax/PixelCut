@@ -84,18 +84,18 @@ fun MainScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
 
-    // Launchers for Gallery and Camera
     val galleryLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia()
+        contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        uri?.let { viewModel.processImageUri(it) }
+        uri?.let { viewModel.processImageUri(context, it) }
     }
 
     val customBgLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia()
+        contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        uri?.let { viewModel.processCustomBackgroundUri(it) }
+        uri?.let { viewModel.processCustomBackgroundUri(context, it) }
     }
+
 
 
     val cameraLauncher = rememberLauncherForActivityResult(
@@ -301,11 +301,8 @@ fun MainScreen(
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 Button(
-                                    onClick = {
-                                        galleryLauncher.launch(
-                                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                        )
-                                    },
+                                    onClick = { galleryLauncher.launch("image/*") },
+
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Color(0xFF6366F1)
                                     )
@@ -367,11 +364,7 @@ fun MainScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         FilledTonalButton(
-                            onClick = {
-                                galleryLauncher.launch(
-                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                )
-                            }
+                            onClick = { galleryLauncher.launch("image/*") }
                         ) {
                             Icon(Icons.Default.PhotoLibrary, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
@@ -409,9 +402,7 @@ fun MainScreen(
                         selectedBackground = state.backgroundType,
                         onBackgroundSelected = { viewModel.setBackground(it) },
                         onPickCustomImage = {
-                            customBgLauncher.launch(
-                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                            )
+                            customBgLauncher.launch("image/*")
                         }
                     )
 

@@ -41,11 +41,12 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
         SegmentationEngine.getInstance(application)
     }
 
-    fun processImageUri(uri: Uri) {
+    fun processImageUri(context: android.content.Context = getApplication(), uri: Uri) {
         viewModelScope.launch {
             _uiState.update { it.copy(isProcessing = true, errorMessage = null, userMessage = null) }
 
-            val decodeResult = ImageUtils.decodeUriToBitmap(getApplication(), uri)
+            val decodeResult = ImageUtils.decodeUriToBitmap(context, uri)
+
             decodeResult.fold(
                 onSuccess = { bitmap ->
                     _uiState.update { it.copy(originalBitmap = bitmap) }
@@ -111,14 +112,15 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
         recompose()
     }
 
-    fun processCustomBackgroundUri(uri: Uri) {
+    fun processCustomBackgroundUri(context: android.content.Context = getApplication(), uri: Uri) {
         viewModelScope.launch {
-            val decodeResult = ImageUtils.decodeUriToBitmap(getApplication(), uri)
+            val decodeResult = ImageUtils.decodeUriToBitmap(context, uri)
             decodeResult.onSuccess { bitmap ->
                 setCustomBackground(bitmap)
             }
         }
     }
+
 
 
     fun setAspectRatio(preset: AspectRatioPreset) {

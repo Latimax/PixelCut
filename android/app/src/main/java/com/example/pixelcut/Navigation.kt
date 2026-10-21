@@ -1,28 +1,40 @@
 package com.example.pixelcut
 
-import androidx.compose.foundation.layout.padding
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.navigation3.runtime.entryProvider
-import androidx.navigation3.runtime.rememberNavBackStack
-import androidx.navigation3.ui.NavDisplay
 import com.example.pixelcut.ui.main.MainScreen
+import com.example.pixelcut.ui.splash.SplashScreen
 
 @Composable
 fun MainNavigation() {
-  val backStack = rememberNavBackStack(Main)
+    var isSplashFinished by remember { mutableStateOf(false) }
 
-  NavDisplay(
-    backStack = backStack,
-    onBack = { backStack.removeLastOrNull() },
-    entryProvider =
-      entryProvider {
-        entry<Main> {
-          MainScreen(modifier = Modifier.safeDrawingPadding())
+    AnimatedContent(
+        targetState = isSplashFinished,
+        transitionSpec = {
+            fadeIn(animationSpec = tween(450)) togetherWith fadeOut(animationSpec = tween(450))
+        },
+        label = "SplashToMainTransition",
+        modifier = Modifier.fillMaxSize()
+    ) { finished ->
+        if (!finished) {
+            SplashScreen(
+                onSplashFinished = { isSplashFinished = true },
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            MainScreen(modifier = Modifier.safeDrawingPadding())
         }
-
-      },
-  )
+    }
 }

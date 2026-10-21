@@ -1,30 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path android:pathData="M31,63.928c0,0 6.4,-11 12.1,-13.1c7.2,-2.6 26,-1.4 26,-1.4l38.1,38.1L107,108.928l-32,-1L31,63.928z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:endX="85.84757"
-                android:endY="92.4963"
-                android:startX="42.9492"
-                android:startY="49.59793"
-                android:type="linear">
-                <item
-                    android:color="#44000000"
-                    android:offset="0.0" />
-                <item
-                    android:color="#00000000"
-                    android:offset="1.0" />
-            </gradient>
-        </aapt:attr>
-    </path>
+
+    <!-- Laser Cut Line with Cyan Glow -->
     <path
-        android:fillColor="#FFFFFF"
-        android:fillType="nonZero"
-        android:pathData="M65.3,45.828l3.8,-6.6c0.2,-0.4 0.1,-0.9 -0.3,-1.1c-0.4,-0.2 -0.9,-0.1 -1.1,0.3l-3.9,6.7c-6.3,-2.8 -13.4,-2.8 -19.7,0l-3.9,-6.7c-0.2,-0.4 -0.7,-0.5 -1.1,-0.3C38.8,38.328 38.7,38.828 38.9,39.228l3.8,6.6C36.2,49.428 31.7,56.028 31,63.928h46C76.3,56.028 71.8,49.428 65.3,45.828zM43.4,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2c-0.3,-0.7 -0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C45.3,56.528 44.5,57.328 43.4,57.328L43.4,57.328zM64.6,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2s-0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C66.5,56.528 65.6,57.328 64.6,57.328L64.6,57.328z"
-        android:strokeWidth="1"
-        android:strokeColor="#00000000" />
+        android:pathData="M48,22 L60,86"
+        android:strokeColor="#5538BDF8"
+        android:strokeWidth="5"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M48,22 L60,86"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round" />
+
+    <!-- Left Handle Ring Top (Center at 38, 42, radius ~7) -->
+    <path
+        android:pathData="M38,35 C41.86,35 45,38.14 45,42 C45,45.86 41.86,49 38,49 C34.14,49 31,45.86 31,42 C31,38.14 34.14,35 38,35 Z"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3.2" />
+
+    <!-- Left Handle Ring Bottom (Center at 38, 66, radius ~7) -->
+    <path
+        android:pathData="M38,59 C41.86,59 45,62.14 45,66 C45,69.86 41.86,73 38,73 C34.14,73 31,69.86 31,66 C31,62.14 34.14,59 38,59 Z"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3.2" />
+
+    <!-- Connecting Shank 1 -->
+    <path
+        android:pathData="M44,45 L52,53"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3.4"
+        android:strokeLineCap="round" />
+
+    <!-- Connecting Shank 2 -->
+    <path
+        android:pathData="M44,63 L52,55"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3.4"
+        android:strokeLineCap="round" />
+
+    <!-- Blade 1 (Pivot to top right: 54,54 -> 76,34) -->
+    <path
+        android:pathData="M52,55 L74,32 L78,35 L55,57 Z"
+        android:fillColor="#FFFFFF" />
+
+    <!-- Blade 2 (Pivot to bottom right: 54,54 -> 76,74) -->
+    <path
+        android:pathData="M52,53 L74,76 L78,73 L55,51 Z"
+        android:fillColor="#FFFFFF" />
+
+    <!-- Cyan Pivot Screw at (54,54) -->
+    <path
+        android:pathData="M54,50.5 C55.93,50.5 57.5,52.07 57.5,54 C57.5,55.93 55.93,57.5 54,57.5 C52.07,57.5 50.5,55.93 50.5,54 C50.5,52.07 52.07,50.5 54,50.5 Z"
+        android:fillColor="#38BDF8"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1" />
+
+    <!-- Magic Sparkle Star 1 (Gold/Yellow at top-right 76, 28) -->
+    <path
+        android:pathData="M76,21 L77.5,26.5 L83,28 L77.5,29.5 L76,35 L74.5,29.5 L69,28 L74.5,26.5 Z"
+        android:fillColor="#FEF08A" />
+
+    <!-- Magic Sparkle Star 2 (Cyan at bottom-right 80, 64) -->
+    <path
+        android:pathData="M80,59 L81,63 L85,64 L81,65 L80,69 L79,65 L75,64 L79,63 Z"
+        android:fillColor="#38BDF8" />
+
+    <!-- Magic Sparkle Star 3 (Lavender/Violet at top-left 33, 27) -->
+    <path
+        android:pathData="M33,22 L34,26 L38,27 L34,28 L33,32 L32,28 L28,27 L32,26 Z"
+        android:fillColor="#C084FC" />
+
 </vector>

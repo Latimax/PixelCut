@@ -53,8 +53,16 @@ def sample_image_file(tmp_path, sample_rgb_image) -> Path:
     return p
 
 
+@pytest.fixture(autouse=True)
+def isolate_test_settings(monkeypatch):
+    """Ensure all tests run against clean default settings without side-effects from disk."""
+    clean = Settings()
+    monkeypatch.setattr(Settings, "load", lambda: clean)
+
+
 @pytest.fixture
 def test_client() -> TestClient:
     """FastAPI TestClient fixture."""
     app = create_app()
     return TestClient(app)
+

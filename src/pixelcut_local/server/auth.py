@@ -33,9 +33,11 @@ def verify_client_access(request: Request, credentials: Optional[HTTPAuthorizati
             detail="LAN access is disabled on this server. Enable LAN mode in Desktop Settings to allow mobile connections.",
         )
 
-    # If request is from localhost and no pairing token is set or LAN mode is off, allow
+    # If request is from localhost and LAN mode is off, allow immediately
     if is_localhost and not settings.lan_mode_enabled:
         return True
+
+
 
     # If LAN mode is active, check required pairing token
     configured_token = settings.pairing_token.strip()

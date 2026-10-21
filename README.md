@@ -42,7 +42,15 @@ No images are ever uploaded to cloud servers or third parties; all inference and
   - Constant-time token/PIN authentication protects LAN access from unauthorized clients.
   - Reachable LAN IP auto-discovery and on-screen QR code for phone browsers.
   - Mobile-first responsive web client with camera capture, gallery upload, preview slider, background replacement, and instant download.
+- **Standalone Native Android App (100% On-Device AI):**
+  - Fully native Android project (`android/`) built in Kotlin and Jetpack Compose (Material 3).
+  - Bundled ONNX Runtime Mobile engine (`u2netp.onnx`) running on-device with zero internet needed.
+  - Interactive Before/After split slider, live transparency checkerboard, solid colors, curated gradients, and custom background photo.
+  - Social media framing presets (1:1, 4:5, 9:16, 16:9), drop shadow, and outline effects.
+  - One-tap save to MediaStore (`Pictures/PixelCut`) and system sharing sheet.
+  - Pre-built APK available at `dist/android/PixelCut-v1.0-debug.apk`.
 - **Security & Reliability Safeguards:**
+
   - Decompression-bomb protections and strict pixel-count caps (default 40 MP).
   - Verified image raster decoding rather than trusting file extensions or MIME headers.
   - Isolated per-job temporary directories with opaque UUIDs and path-traversal prevention.
